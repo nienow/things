@@ -7,12 +7,13 @@ import {
 } from '../data/data';
 import './app.css';
 import { FormEvent } from 'react';
+import { Popover } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import CreateCategory from '../create-category/create-category';
 
 interface AppState {
 	categories: string[];
 	data: Map<string, ThingItem[]>;
-	newCat: string;
-	newTitle: string;
 }
 
 export default class App extends React.Component<{}, AppState> {
@@ -21,9 +22,7 @@ export default class App extends React.Component<{}, AppState> {
 		super(props);
 		this.state = {
 			categories: [],
-			data: new Map(),
-			newCat: '',
-			newTitle: ''
+			data: new Map()
 		};
 	}
 
@@ -69,47 +68,10 @@ export default class App extends React.Component<{}, AppState> {
 		}
 	}
 
-	handleSubmit(event: FormEvent) {
-		event.preventDefault();
-		getDB()
-		.collection('things')
-		.add({
-			title: this.state.newTitle,
-			category: this.state.newCat
-		})
-		.then(() => {
-			this.fetchData();
-		});
-	}
-
-	handleCatChange(event: FormEvent) {
-		const target: HTMLInputElement = event.target as HTMLInputElement;
-		this.setState({newCat: target.value});
-	}
-
-	handleTitleChange(event: FormEvent) {
-		const target: HTMLInputElement = event.target as HTMLInputElement;
-		this.setState({newTitle: target.value});
-	}
-
 	render() {
 		return (<div className="main">
 				<Admin/>
-				<form onSubmit={this.handleSubmit.bind(this)}>
-					<input
-						type="text"
-						value={this.state.newCat}
-						onChange={this.handleCatChange.bind(this)}
-						placeholder={'New Category...'}
-					/>
-					<input
-						type="text"
-						value={this.state.newTitle}
-						onChange={this.handleTitleChange.bind(this)}
-						placeholder={'New Title...'}
-					/>
-					<button type="submit">Submit</button>
-				</form>
+				<CreateCategory></CreateCategory>
 				<div className="category-list">
 					{this.loopCats()}
 				</div>
