@@ -1,79 +1,83 @@
 import * as React from "react";
-import { getDB } from "../data/data";
-import { FormEvent } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import './list.css';
 
 interface ThingListState {
   data: any[];
-  value: string;
 }
 
-export default class ThingList extends React.Component<{}, ThingListState> {
-  constructor(props: {}) {
+interface ThingListProps {
+  data: any[];
+}
+
+const reorder = (list: any[], startIndex: number, endIndex: number) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+export default class ThingList extends React.Component<ThingListProps, ThingListState> {
+  constructor(props: ThingListProps) {
     super(props);
     this.state = {
-      data: [
-        {
-          title: "Blah"
-        }
-      ],
-      value: ""
+      data: props.data
     };
   }
 
-  componentDidMount() {
-    this.refreshData();
-  }
-
-  refreshData() {
-    getDB()
-      .collection("things")
-      .get()
-      .then(querySnapshot => {
-        const data: any[] = [];
-        querySnapshot.forEach(doc => {
-          data.push(doc.data());
-        });
-        this.setState({ data });
+  componentDidUpdate(prevProps: Readonly<ThingListProps>, prevState: Readonly<ThingListState>, snapshot?: any): void {
+    if (this.props.data !== prevProps.data) {
+      this.setState({
+        data: this.props.data
       });
+    }
   }
 
-  handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    getDB()
-      .collection("things")
-      .add({
-        title: this.state.value,
-        category: "Animal"
-      })
-      .then(() => {
-        this.refreshData();
-      });
-  }
+  onDragEnd(result: any) {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
 
-  handleChange(event: FormEvent) {
-    const target: HTMLInputElement = event.target as HTMLInputElement;
-    this.setState({ value: target.value });
+    const items = reorder(
+        this.state.data,
+        result.source.index,
+        result.destination.index
+    );
+
+    this.setState({
+      data: items
+    });
   }
 
   render() {
-    let itemList = this.state.data.map(function(item) {
-      return (
-        <li className="item" key={item.title}>
-          {item.title}
-        </li>
-      );
-    });
     return (
-      <div>
-        <form onSubmit={this.handleSubmit.bind(this)}>
-          <input
-            type="text"
-            value={this.state.value}
-            onChange={this.handleChange.bind(this)}
-          />
-        </form>
-        <ul>{itemList}</ul>
-      </div>
+      <DragDropContext onDragEnd={this.onDragEnd.bind(this)}>
+        <Droppable droppableId="droppable">
+          {(provided, snapshot) => (
+              <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+              >
+                {this.state.data.map((item, index) => (
+                    <Draggable key={item.title} draggableId={item.title} index={index}>
+                      {(provided, snapshot) => (
+                          <div className="list-item"
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                          >
+                            {item.title}
+                          </div>
+                      )}
+                    </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     );
   }
 }

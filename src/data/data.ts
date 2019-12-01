@@ -20,3 +20,9 @@ export const signInToDB = () => {
 export const isSignedIn = () => {
   return firebase.auth().currentUser != null;
 };
+
+export interface ThingItem {
+  title: string;
+  category: string;
+  level?: number;
+}
