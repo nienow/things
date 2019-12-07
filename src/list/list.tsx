@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {
 	DragDropContext,
-	Droppable,
-	Draggable
+	Draggable,
+	Droppable
 } from 'react-beautiful-dnd';
 import './list.css';
 
@@ -53,24 +53,23 @@ export default class ThingList extends React.Component<ThingListProps, ThingList
 
 	render() {
 		return (<DragDropContext onDragEnd={this.onDragEnd.bind(this)}>
-				<Droppable droppableId="droppable">
-					{(provided, snapshot) => (<div
-							{...provided.droppableProps}
-							ref={provided.innerRef}
+			<Droppable droppableId="droppable">
+				{(provided, snapshot) => (<div
+					{...provided.droppableProps}
+					ref={provided.innerRef}
+				>
+					{this.state.data.map((item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
+						{(provided, snapshot) => (<div className="list-item"
+													   ref={provided.innerRef}
+													   {...provided.draggableProps}
+													   {...provided.dragHandleProps}
 						>
-							{this.state.data.map(
-								(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
-										{(provided, snapshot) => (<div className="list-item"
-																	   ref={provided.innerRef}
-																	   {...provided.draggableProps}
-																	   {...provided.dragHandleProps}
-											>
-												{item.title}
-											</div>)}
-									</Draggable>))}
-							{provided.placeholder}
+							{item.title}
 						</div>)}
-				</Droppable>
-			</DragDropContext>);
+					</Draggable>))}
+					{provided.placeholder}
+				</div>)}
+			</Droppable>
+		</DragDropContext>);
 	}
 }

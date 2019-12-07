@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
-	signInToDB,
-	isSignedIn
+	isSignedIn,
+	signInToDB
 } from '../data/data';
 
 interface AdminState {

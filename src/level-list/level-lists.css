@@ -1,0 +1,11 @@
+.level-list {
+	width: 200px;
+	border: 1px solid #aaa;
+	padding: 10px;
+}
+
+.list-item {
+	padding: 10px;
+	border-radius: 5px;
+	border: 1px solid #aaa;
+}

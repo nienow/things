@@ -1,12 +1,7 @@
 import * as React from 'react';
-import Admin from '../admin/admin';
-import ThingCategory from '../category/category';
-import {
-	getDB,
-	ThingItem
-} from '../data/data';
-import './create-category.css';
 import { FormEvent } from 'react';
+import { getDB } from '../data/data';
+import './create-category.css';
 import { Popover } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 
@@ -53,7 +48,7 @@ export default class CreateCategory extends React.Component<{}, CreateCategorySt
 	handleClick(event: FormEvent) {
 		this.setState({
 			popoverEl: event.currentTarget
-		})
+		});
 	}
 
 	handleClose() {
