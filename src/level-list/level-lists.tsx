@@ -7,17 +7,29 @@ import {
 import './level-lists.css';
 import {
 	Dialog,
-	DialogTitle
+	DialogTitle,
+	IconButton,
+	Button,
+	TextField
 } from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
+import {
+	getDB,
+	ThingItem
+} from '../data/data';
+import { FormEvent } from 'react';
 
 interface LevelListsState {
-	levels: any[][];
+	levels: ThingItem[][];
+	dirty: boolean;
+	value: string;
 }
 
 interface LevelListsProps {
 	categoryName: string;
 	data: any[];
 	open: boolean;
+	onClose: () => void;
 }
 
 const reorder = (list: any[], startIndex: number, endIndex: number) => {
@@ -50,21 +62,18 @@ export default class LevelLists extends React.Component<LevelListsProps, LevelLi
 				[],
 				[],
 				[],
+				[],
+				[],
+				[],
 				[]
-			]
+			],
+			dirty: false,
+			value: ''
 		};
 		props.data.forEach((item: any) => {
 			this.state.levels[item.level || 0].push(item);
 		});
 	}
-
-	// componentDidUpdate(prevProps: Readonly<LevelListProps>, prevState: Readonly<LevelListState>, snapshot?: any): void {
-	// 	if (this.props.data !== prevProps.data) {
-	// 		this.setState({
-	// 			data: this.props.data
-	// 		});
-	// 	}
-	// }
 
 	getList(id: any) {
 		return this.state.levels[Number(id)];
@@ -76,85 +85,132 @@ export default class LevelLists extends React.Component<LevelListsProps, LevelLi
 			return;
 		}
 
-		// if (result.source.droppableId === destination.droppableId) {
-
-		// const items = reorder(this.state.levels[level], result.source.index, result.destination.index);
-
-		const id1 = Number(result.source.droppableId);
-		const id2 = Number(result.destination.droppableId);
-		const moveResult = move(this.getList(result.source.droppableId), this.getList(result.destination.droppableId),
-			result.source, result.destination);
-
-		const levels = this.state.levels;
-		levels[id1] = moveResult[id1];
-		levels[id2] = moveResult[id2];
-
 		this.setState({
-			levels
+			dirty: true
+		});
+
+		if (result.source.droppableId === result.destination.droppableId) {
+			const id1 = Number(result.source.droppableId);
+			const items = reorder(this.getList(result.source.droppableId), result.source.index, result.destination.index);
+			const levels = this.state.levels;
+			levels[id1] = items;
+			this.setState({
+				levels
+			});
+		} else {
+			const id1 = Number(result.source.droppableId);
+			const id2 = Number(result.destination.droppableId);
+			const moveResult = move(this.getList(result.source.droppableId), this.getList(result.destination.droppableId),
+				result.source, result.destination);
+
+			const levels = this.state.levels;
+			levels[id1] = moveResult[id1];
+			levels[id2] = moveResult[id2];
+			this.setState({
+				levels
+			});
+		}
+	}
+
+	save() {
+		const dirtyObjs: ThingItem[] = [];
+		this.state.levels.forEach((level: ThingItem[], levelIndex: number) => {
+			level.forEach((item: ThingItem, itemIndex: number) => {
+				if (item.level !== levelIndex || item.seq !== itemIndex) {
+					item.level = levelIndex;
+					item.seq = itemIndex;
+					dirtyObjs.push(item);
+				}
+			});
+		});
+
+		if (dirtyObjs.length > 0) {
+			const batch = getDB().batch();
+			dirtyObjs.forEach((dirtyObj: ThingItem) => {
+				batch.update(getDB().collection('things').doc(dirtyObj.id), {
+					level: dirtyObj.level,
+					seq: dirtyObj.seq
+				});
+			});
+			batch.commit().then(() => {
+				// success
+				this.setState({
+					dirty: false
+				});
+			}, () => {
+				alert('failed to update');
+			});
+		}
+	}
+
+	handleChange(event: FormEvent) {
+		const target: HTMLInputElement = event.target as HTMLInputElement;
+		this.setState({value: target.value});
+	}
+
+	handleSubmit(event: FormEvent) {
+		event.preventDefault();
+		getDB()
+		.collection('things')
+		.add({
+			title: this.state.value,
+			category: this.props.categoryName
+		})
+		.then((docRef) => {
+			this.state.levels[0].push({
+				id: docRef.id,
+				title: this.state.value,
+				category: this.props.categoryName
+			});
+			this.setState({
+				levels: this.state.levels,
+				value: ''
+			});
 		});
 	}
 
+	levelList(i: number) {
+		return (
+			<Droppable droppableId={''+i}>
+				{(provided, snapshot) => (<div
+					{...provided.droppableProps}
+					ref={provided.innerRef}
+					className="level-list"
+				><div>Level {i}</div>
+					{this.state.levels[i].map(
+						(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
+							{(provided, snapshot) => (<div className="list-item"
+														   ref={provided.innerRef}
+														   {...provided.draggableProps}
+														   {...provided.dragHandleProps}
+							>
+								{item.title}
+							</div>)}
+						</Draggable>))}
+					{provided.placeholder}
+				</div>)}
+			</Droppable>
+		);
+	}
+
 	render() {
-		return (<Dialog aria-labelledby="simple-dialog-title" open={this.props.open}>
-			<DialogTitle id="simple-dialog-title">{this.props.categoryName}</DialogTitle>
+		return (<Dialog aria-labelledby="simple-dialog-title" open={this.props.open} onClose={this.props.onClose} fullScreen={true}>
+			<DialogTitle id="simple-dialog-title">{this.props.categoryName}
+				{this.state.dirty ? <span></span> : <IconButton aria-label="close" onClick={this.props.onClose}><CloseIcon/></IconButton> }
+			<Button onClick={this.save.bind(this)}>Save</Button>
+			<form onSubmit={this.handleSubmit.bind(this)}>
+				<TextField id="outlined-basic" placeholder={'New ' + this.props.categoryName + '...'} variant="outlined" onChange={this.handleChange.bind(this)} value={this.state.value}/>
+			</form>
+			</DialogTitle>
+			<div className="level-lists">
 			<DragDropContext onDragEnd={this.onDragEnd.bind(this)}>
-				<Droppable droppableId="0">
-					{(provided, snapshot) => (<div
-						{...provided.droppableProps}
-						ref={provided.innerRef}
-						className="level-list"
-					>
-						{this.state.levels[0].map(
-							(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
-								{(provided, snapshot) => (<div className="list-item"
-															   ref={provided.innerRef}
-															   {...provided.draggableProps}
-															   {...provided.dragHandleProps}
-								>
-									{item.title}
-								</div>)}
-							</Draggable>))}
-						{provided.placeholder}
-					</div>)}
-				</Droppable>
-				<Droppable droppableId="1">
-					{(provided, snapshot) => (<div
-						{...provided.droppableProps}
-						ref={provided.innerRef}
-						className="level-list"
-					>
-						{this.state.levels[1].map(
-							(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
-								{(provided, snapshot) => (<div className="list-item"
-															   ref={provided.innerRef}
-															   {...provided.draggableProps}
-															   {...provided.dragHandleProps}
-								>
-									{item.title}
-								</div>)}
-							</Draggable>))}
-						{provided.placeholder}
-					</div>)}
-				</Droppable>
-				<Droppable droppableId="2">
-					{(provided, snapshot) => (<div
-						{...provided.droppableProps}
-						ref={provided.innerRef}
-						className="level-list"
-					>
-						{this.state.levels[2].map(
-							(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
-								{(provided, snapshot) => (<div className="list-item"
-															   ref={provided.innerRef}
-															   {...provided.draggableProps}
-															   {...provided.dragHandleProps}
-								>
-									{item.title}
-								</div>)}
-							</Draggable>))}
-						{provided.placeholder}
-					</div>)}
-				</Droppable>
-			</DragDropContext></Dialog>);
+				{this.levelList(0)}
+				{this.levelList(1)}
+				{this.levelList(2)}
+				{this.levelList(3)}
+				{this.levelList(4)}
+				{this.levelList(5)}
+				{this.levelList(6)}
+			</DragDropContext></div></Dialog>);
 	}
 }

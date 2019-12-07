@@ -1,3 +1,8 @@
+.level-lists {
+	display: flex;
+	height: 100%;
+}
+
 .level-list {
 	width: 200px;
 	border: 1px solid #aaa;

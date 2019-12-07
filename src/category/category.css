@@ -1,11 +1,15 @@
-.category-item {
-	width: 300px;
+.category {
+	/*width: 300px;*/
 	border: 1px solid #aaa;
 	padding: 10px;
+	display: flex;
 }
 
-.list-item {
+.category__name {
 	padding: 10px;
-	border-radius: 5px;
-	border: 1px solid #aaa;
+	cursor: pointer;
+}
+
+.category__total {
+	padding: 10px;
 }

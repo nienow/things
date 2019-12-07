@@ -7,6 +7,7 @@ import {
 import './category.css';
 import ThingList from '../list/list';
 import LevelLists from '../level-list/level-lists';
+import { TextField } from '@material-ui/core';
 
 interface CategoryState {
 	data: any[];
@@ -60,19 +61,21 @@ export default class ThingCategory extends React.Component<CategoryProps, Catego
 		});
 	}
 
+	onClose() {
+		this.setState({
+			categoryDetails: false
+		});
+	}
+
 	render() {
-		return (<div className="category-item">
-			<div onClick={this.goToCategory.bind(this)}>{this.props.category}</div>
+		return (<div className="category">
+			<a className="category__name" onClick={this.goToCategory.bind(this)}>{this.props.category}</a>
+			<div className="category__total">({this.state.data.length})</div>
 			<form onSubmit={this.handleSubmit.bind(this)}>
-				<input
-					type="text"
-					value={this.state.value}
-					onChange={this.handleChange.bind(this)}
-					placeholder={'New ' + this.props.category + '...'}
-				/>
+				<TextField id="outlined-basic" placeholder={'New ' + this.props.category + '...'} variant="outlined" onChange={this.handleChange.bind(this)} value={this.state.value}/>
 			</form>
-			<ThingList data={this.state.data}></ThingList>
-			<LevelLists open={this.state.categoryDetails} data={this.state.data} categoryName={this.props.category}/>
+
+			<LevelLists open={this.state.categoryDetails} data={this.state.data} categoryName={this.props.category} onClose={this.onClose.bind(this)}/>
 		</div>);
 	}
 }

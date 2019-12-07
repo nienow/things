@@ -47,10 +47,13 @@ export default class Main extends React.Component<{}, MainState> {
 		getDB()
 		.collection('things')
 		.get()
-		.then(querySnapshot => {
+		.then((querySnapshot) => {
 			const data: ThingItem[] = [];
-			querySnapshot.forEach(doc => {
-				data.push(doc.data() as ThingItem);
+			querySnapshot.forEach((doc) => {
+				data.push({
+					id: doc.id,
+					...doc.data()
+				} as ThingItem);
 			});
 			this.parseData(data);
 		});
