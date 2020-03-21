@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { FormEvent } from 'react';
 import {
 	DragDropContext,
 	Draggable,
@@ -6,10 +7,10 @@ import {
 } from 'react-beautiful-dnd';
 import './level-lists.css';
 import {
+	Button,
 	Dialog,
 	DialogTitle,
 	IconButton,
-	Button,
 	TextField
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
@@ -17,7 +18,6 @@ import {
 	getDB,
 	ThingItem
 } from '../data/data';
-import { FormEvent } from 'react';
 
 interface LevelListsState {
 	levels: ThingItem[][];
@@ -143,6 +143,19 @@ export default class LevelLists extends React.Component<LevelListsProps, LevelLi
 		}
 	}
 
+	deleteItem(item: ThingItem, level: number) {
+		getDB()
+		.collection('things')
+		.doc(item.id).delete()
+		.then((docRef) => {
+			this.state.levels[level].splice(this.state.levels[level].indexOf(item), 1);
+			this.setState({
+				levels: this.state.levels,
+				value: ''
+			});
+		});
+	}
+
 	handleChange(event: FormEvent) {
 		const target: HTMLInputElement = event.target as HTMLInputElement;
 		this.setState({value: target.value});
@@ -170,47 +183,51 @@ export default class LevelLists extends React.Component<LevelListsProps, LevelLi
 	}
 
 	levelList(i: number) {
-		return (
-			<Droppable droppableId={''+i}>
-				{(provided, snapshot) => (<div
-					{...provided.droppableProps}
-					ref={provided.innerRef}
-					className="level-list"
-				><div>Level {i}</div>
-					{this.state.levels[i].map(
-						(item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
-							{(provided, snapshot) => (<div className="list-item"
-														   ref={provided.innerRef}
-														   {...provided.draggableProps}
-														   {...provided.dragHandleProps}
-							>
-								{item.title}
-							</div>)}
-						</Draggable>))}
-					{provided.placeholder}
-				</div>)}
-			</Droppable>
-		);
+		return (<Droppable droppableId={'' + i}>
+			{(provided, snapshot) => (<div
+				{...provided.droppableProps}
+				ref={provided.innerRef}
+				className="level-list"
+			>
+				<div>Level {i}</div>
+				{this.state.levels[i].map((item, index) => (<Draggable key={item.title} draggableId={item.title} index={index}>
+					{(provided, snapshot) => (<div className="list-item"
+												   ref={provided.innerRef}
+												   {...provided.draggableProps}
+												   {...provided.dragHandleProps}
+					>
+						<span>{item.title}</span>
+						<IconButton aria-label="delete"
+									onClick={this.deleteItem.bind(this, item, i)}><CloseIcon/></IconButton>
+					</div>)}
+				</Draggable>))}
+				{provided.placeholder}
+			</div>)}
+		</Droppable>);
 	}
 
 	render() {
-		return (<Dialog aria-labelledby="simple-dialog-title" open={this.props.open} onClose={this.props.onClose} fullScreen={true}>
-			<DialogTitle id="simple-dialog-title">{this.props.categoryName}
-				{this.state.dirty ? <span></span> : <IconButton aria-label="close" onClick={this.props.onClose}><CloseIcon/></IconButton> }
-			<Button onClick={this.save.bind(this)}>Save</Button>
-			<form onSubmit={this.handleSubmit.bind(this)}>
-				<TextField id="outlined-basic" placeholder={'New ' + this.props.categoryName + '...'} variant="outlined" onChange={this.handleChange.bind(this)} value={this.state.value}/>
-			</form>
-			</DialogTitle>
-			<div className="level-lists">
-			<DragDropContext onDragEnd={this.onDragEnd.bind(this)}>
-				{this.levelList(0)}
-				{this.levelList(1)}
-				{this.levelList(2)}
-				{this.levelList(3)}
-				{this.levelList(4)}
-				{this.levelList(5)}
-				{this.levelList(6)}
-			</DragDropContext></div></Dialog>);
+		return (
+			<Dialog aria-labelledby="simple-dialog-title" open={this.props.open} onClose={this.props.onClose} fullScreen={true}>
+				<DialogTitle id="simple-dialog-title">{this.props.categoryName}
+					{this.state.dirty ? <span></span> :
+						<IconButton aria-label="close" onClick={this.props.onClose}><CloseIcon/></IconButton>}
+					<Button onClick={this.save.bind(this)}>Save</Button>
+					<form onSubmit={this.handleSubmit.bind(this)}>
+						<TextField id="outlined-basic" placeholder={'New ' + this.props.categoryName + '...'} variant="outlined"
+								   onChange={this.handleChange.bind(this)} value={this.state.value}/>
+					</form>
+				</DialogTitle>
+				<div className="level-lists">
+					<DragDropContext onDragEnd={this.onDragEnd.bind(this)}>
+						{this.levelList(0)}
+						{this.levelList(1)}
+						{this.levelList(2)}
+						{this.levelList(3)}
+						{this.levelList(4)}
+						{this.levelList(5)}
+						{this.levelList(6)}
+					</DragDropContext></div>
+			</Dialog>);
 	}
 }

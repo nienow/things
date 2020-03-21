@@ -23,7 +23,7 @@ export const isSignedIn = () => {
 };
 
 export interface ThingItem {
-	id: string;
+	id?: string;
 	title: string;
 	category: string;
 	level?: number;

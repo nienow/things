@@ -5,12 +5,11 @@ import {
 	ThingItem
 } from '../data/data';
 import './category.css';
-import ThingList from '../list/list';
 import LevelLists from '../level-list/level-lists';
 import { TextField } from '@material-ui/core';
 
 interface CategoryState {
-	data: any[];
+	data: ThingItem[];
 	value: string;
 	categoryDetails: boolean;
 }
@@ -32,6 +31,17 @@ export default class ThingCategory extends React.Component<CategoryProps, Catego
 
 	handleSubmit(event: FormEvent) {
 		event.preventDefault();
+		if (!this.state.value) {
+			return;
+		}
+		const hasExisting = this.state.data.find((item: ThingItem) => {
+			return item.title === this.state.value || (item.title.length > 3 && this.state.value.indexOf(item.title) >= 0);
+		});
+
+		if (hasExisting) {
+			return;
+		}
+
 		getDB()
 		.collection('things')
 		.add({
@@ -72,10 +82,12 @@ export default class ThingCategory extends React.Component<CategoryProps, Catego
 			<a className="category__name" onClick={this.goToCategory.bind(this)}>{this.props.category}</a>
 			<div className="category__total">({this.state.data.length})</div>
 			<form onSubmit={this.handleSubmit.bind(this)}>
-				<TextField id="outlined-basic" placeholder={'New ' + this.props.category + '...'} variant="outlined" onChange={this.handleChange.bind(this)} value={this.state.value}/>
+				<TextField id="outlined-basic" placeholder={'New ' + this.props.category + '...'} variant="outlined"
+						   onChange={this.handleChange.bind(this)} value={this.state.value}/>
 			</form>
 
-			<LevelLists open={this.state.categoryDetails} data={this.state.data} categoryName={this.props.category} onClose={this.onClose.bind(this)}/>
+			<LevelLists open={this.state.categoryDetails} data={this.state.data} categoryName={this.props.category}
+						onClose={this.onClose.bind(this)}/>
 		</div>);
 	}
 }
