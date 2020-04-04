@@ -3,7 +3,7 @@ import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 
-const fireConfig = require('../fireConfig.json');
+const fireConfig = require('./fireConfig.json');
 
 firebase.initializeApp(fireConfig);
 
@@ -13,19 +13,13 @@ export const getDB = () => {
 	return fireDB;
 };
 
+export const getAuth = () => {
+	return firebase.auth();
+};
+
 export const signInToDB = () => {
 	var provider = new firebase.auth.GoogleAuthProvider();
 	return firebase.auth().signInWithPopup(provider);
 };
 
-export const isSignedIn = () => {
-	return firebase.auth().currentUser != null;
-};
 
-export interface ThingItem {
-	id?: string;
-	title: string;
-	category: string;
-	level?: number;
-	seq?: number;
-}
