@@ -1,5 +1,8 @@
 import * as React from 'react';
-import {FormEvent, useState} from 'react';
+import {
+	FormEvent,
+	useState
+} from 'react';
 import {
 	DragDropContext,
 	Draggable,
@@ -14,10 +17,8 @@ import {
 	TextField
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import {
-	getDB,
-} from '../firebase-util';
-import {ThingItem} from "../data-model";
+import { getDB, } from '../firebase-util';
+import { ThingItem } from '../data-model';
 
 interface LevelListsProps {
 	categoryName: string;
@@ -49,7 +50,7 @@ const move = (source: any[], destination: any[], droppableSource: any, droppable
 };
 
 export const LevelLists = (props: LevelListsProps) => {
-	const [levels, setLevels] = useState([
+	const initialLevels: any[][] = [
 		[],
 		[],
 		[],
@@ -57,12 +58,14 @@ export const LevelLists = (props: LevelListsProps) => {
 		[],
 		[],
 		[]
-	]);
+	];
+	props.data.forEach((item: any) => {
+		initialLevels[item.level || 0].push(item);
+	});
+
+	const [levels, setLevels] = useState(initialLevels);
 	const [dirty, setDirty] = useState(false);
 	const [value, setValue] = useState('');
-	props.data.forEach((item: any) => {
-		levels[item.level || 0].push(item);
-	});
 
 	const getList = (id: any) => {
 		return levels[Number(id)];
@@ -84,8 +87,8 @@ export const LevelLists = (props: LevelListsProps) => {
 		} else {
 			const id1 = Number(result.source.droppableId);
 			const id2 = Number(result.destination.droppableId);
-			const moveResult = move(getList(result.source.droppableId), getList(result.destination.droppableId),
-				result.source, result.destination);
+			const moveResult = move(getList(result.source.droppableId), getList(result.destination.droppableId), result.source,
+				result.destination);
 
 			levels[id1] = moveResult[id1];
 			levels[id2] = moveResult[id2];
@@ -181,26 +184,24 @@ export const LevelLists = (props: LevelListsProps) => {
 		</Droppable>);
 	};
 
-	return (
-		<Dialog aria-labelledby="simple-dialog-title" open={props.open} onClose={props.onClose} fullScreen={true}>
-			<DialogTitle id="simple-dialog-title">{props.categoryName}
-				{dirty ? <span></span> :
-					<IconButton aria-label="close" onClick={props.onClose}><CloseIcon/></IconButton>}
-				<Button onClick={save}>Save</Button>
-				<form onSubmit={handleSubmit}>
-					<TextField id="outlined-basic" placeholder={'New ' + props.categoryName + '...'} variant="outlined"
-								 onChange={handleChange} value={value}/>
-				</form>
-			</DialogTitle>
-			<div className="level-lists">
-				<DragDropContext onDragEnd={onDragEnd}>
-					{levelList(0)}
-					{levelList(1)}
-					{levelList(2)}
-					{levelList(3)}
-					{levelList(4)}
-					{levelList(5)}
-					{levelList(6)}
-				</DragDropContext></div>
-		</Dialog>);
+	return (<Dialog aria-labelledby="simple-dialog-title" open={props.open} onClose={props.onClose} fullScreen={true}>
+		<DialogTitle id="simple-dialog-title">{props.categoryName}
+			{dirty ? <span></span> : <IconButton aria-label="close" onClick={props.onClose}><CloseIcon/></IconButton>}
+			<Button onClick={save}>Save</Button>
+			<form onSubmit={handleSubmit}>
+				<TextField id="outlined-basic" placeholder={'New ' + props.categoryName + '...'} variant="outlined"
+						   onChange={handleChange} value={value}/>
+			</form>
+		</DialogTitle>
+		<div className="level-lists">
+			<DragDropContext onDragEnd={onDragEnd}>
+				{levelList(0)}
+				{levelList(1)}
+				{levelList(2)}
+				{levelList(3)}
+				{levelList(4)}
+				{levelList(5)}
+				{levelList(6)}
+			</DragDropContext></div>
+	</Dialog>);
 };
