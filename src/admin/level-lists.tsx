@@ -11,21 +11,18 @@ import {
 import './level-lists.css';
 import {
 	Button,
-	Dialog,
-	DialogTitle,
 	IconButton,
 	TextField
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { getDB, } from '../firebase-util';
 import { ThingItem } from '../data-model';
-
-interface LevelListsProps {
-	categoryName: string;
-	data: any[];
-	open: boolean;
-	onClose: () => void;
-}
+import {
+	addThing,
+	deleteThing,
+	getThingMap
+} from '../thing-db';
+import { useParams } from 'react-router-dom';
 
 const reorder = (list: any[], startIndex: number, endIndex: number) => {
 	const result = Array.from(list);
@@ -49,7 +46,8 @@ const move = (source: any[], destination: any[], droppableSource: any, droppable
 	return result;
 };
 
-export const LevelLists = (props: LevelListsProps) => {
+export const LevelLists = () => {
+	let {categoryName} = useParams();
 	const initialLevels: any[][] = [
 		[],
 		[],
@@ -59,7 +57,9 @@ export const LevelLists = (props: LevelListsProps) => {
 		[],
 		[]
 	];
-	props.data.forEach((item: any) => {
+	console.log('cat: ' + categoryName);
+	const data = getThingMap().get(categoryName);
+	data.forEach((item: any) => {
 		initialLevels[item.level || 0].push(item);
 	});
 
@@ -126,10 +126,8 @@ export const LevelLists = (props: LevelListsProps) => {
 	};
 
 	const deleteItem = (item: ThingItem, level: number) => {
-		getDB()
-		.collection('things')
-		.doc(item.id).delete()
-		.then((docRef) => {
+		deleteThing(item)
+		.then(() => {
 			levels[level].splice(levels[level].indexOf(item), 1);
 			setLevels(levels);
 			setValue('');
@@ -143,17 +141,15 @@ export const LevelLists = (props: LevelListsProps) => {
 
 	const handleSubmit = (event: FormEvent) => {
 		event.preventDefault();
-		getDB()
-		.collection('things')
-		.add({
+		addThing({
 			title: value,
-			category: props.categoryName
+			category: categoryName
 		})
 		.then((docRef) => {
 			levels[0].push({
 				id: docRef.id,
 				title: value,
-				category: props.categoryName
+				category: categoryName
 			});
 			setLevels(levels);
 			setValue('');
@@ -184,15 +180,15 @@ export const LevelLists = (props: LevelListsProps) => {
 		</Droppable>);
 	};
 
-	return (<Dialog aria-labelledby="simple-dialog-title" open={props.open} onClose={props.onClose} fullScreen={true}>
-		<DialogTitle id="simple-dialog-title">{props.categoryName}
-			{dirty ? <span></span> : <IconButton aria-label="close" onClick={props.onClose}><CloseIcon/></IconButton>}
-			<Button onClick={save}>Save</Button>
-			<form onSubmit={handleSubmit}>
-				<TextField id="outlined-basic" placeholder={'New ' + props.categoryName + '...'} variant="outlined"
-						   onChange={handleChange} value={value}/>
-			</form>
-		</DialogTitle>
+	const saveButton = dirty ? <Button onClick={save}>Save</Button> : null;
+
+	return <div>
+		<h3>{categoryName}</h3>
+		{saveButton}
+		<form onSubmit={handleSubmit}>
+			<TextField id="outlined-basic" placeholder={'New ' + categoryName + '...'} variant="outlined"
+					   onChange={handleChange} value={value}/>
+		</form>
 		<div className="level-lists">
 			<DragDropContext onDragEnd={onDragEnd}>
 				{levelList(0)}
@@ -202,6 +198,7 @@ export const LevelLists = (props: LevelListsProps) => {
 				{levelList(4)}
 				{levelList(5)}
 				{levelList(6)}
-			</DragDropContext></div>
-	</Dialog>);
+			</DragDropContext>
+		</div>
+	</div>;
 };

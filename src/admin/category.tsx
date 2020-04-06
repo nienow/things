@@ -1,12 +1,14 @@
 import * as React from 'react';
-import {FormEvent, useState} from 'react';
 import {
-	getDB
-} from '../firebase-util';
+	FormEvent,
+	useState
+} from 'react';
 import './category.css';
 import { TextField } from '@material-ui/core';
-import {ThingItem} from "../data-model";
-import {LevelLists} from "./level-lists";
+import { ThingItem } from '../data-model';
+import { addThing } from '../thing-db';
+import { useHistory } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
 
 interface CategoryProps {
 	category: string;
@@ -14,9 +16,9 @@ interface CategoryProps {
 }
 
 export const ThingCategory = (props: CategoryProps) => {
+	const history = useHistory();
 	const [data, setData] = useState(props.data);
 	const [value, setValue] = useState('');
-	const [categoryDetails, setCategoryDetails] = useState(false);
 
 	const handleSubmit = (event: FormEvent) => {
 		event.preventDefault();
@@ -31,13 +33,10 @@ export const ThingCategory = (props: CategoryProps) => {
 			return;
 		}
 
-		getDB()
-		.collection('things')
-		.add({
+		addThing({
 			title: value,
 			category: props.category
-		})
-		.then(() => {
+		}).then(() => {
 			data.push({
 				title: value,
 				category: props.category
@@ -53,22 +52,15 @@ export const ThingCategory = (props: CategoryProps) => {
 	};
 
 	const goToCategory = () => {
-		setCategoryDetails(true);
-	};
-
-	const onClose = () => {
-		setCategoryDetails(false);
+		history.push(`/admin/category/${props.category}`);
 	};
 
 	return (<div className="category">
-		<a className="category__name" onClick={goToCategory}>{props.category}</a>
+		<Button onClick={goToCategory}>{props.category}</Button>
 		<div className="category__total">({data.length})</div>
 		<form onSubmit={handleSubmit}>
 			<TextField id="outlined-basic" placeholder={'New ' + props.category + '...'} variant="outlined"
-						 onChange={handleChange} value={value}/>
+					   onChange={handleChange} value={value}/>
 		</form>
-
-		<LevelLists open={categoryDetails} data={data} categoryName={props.category}
-					onClose={onClose}/>
 	</div>);
 };

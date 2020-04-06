@@ -1,55 +1,30 @@
 import * as React from 'react';
-import {
-	useEffect,
-	useState
-} from 'react';
-import { getThings } from '../firebase-util';
+import { useState } from 'react';
 import './admin-main.css';
-import { AdminLogin } from './admin-login';
-import { ThingItem } from '../data-model';
-import { ThingCategory } from './category';
 import { CreateCategory } from './create-category';
+import {
+	getAuth,
+	signInToDB
+} from '../firebase-util';
+import { User } from 'firebase';
+import { Route } from 'react-router-dom';
+import { CategoryList } from './category-list';
+import { LevelLists } from './level-lists';
 
 export const AdminMain = () => {
-	const [categories, setCategories] = useState([]);
-	const [data, setData] = useState(new Map());
+	const [isAuthenticated, setAuthenticated] = useState(false);
 
-	const parseData = (items: ThingItem[]) => {
-		const newData = new Map();
-		const newCategories: string[] = [];
-		items.forEach((item: ThingItem) => {
-			let category = newData.get(item.category);
-			if (!category) {
-				category = [];
-				newData.set(item.category, category);
-				newCategories.push(item.category);
-			}
-			category.push(item);
-		});
-		setData(newData);
-		setCategories(newCategories);
-	};
+	getAuth().onAuthStateChanged((user: User) => {
+		setAuthenticated(user != null);
+	});
 
-	const loopCats = () => {
-		if (categories) {
-			return categories.map((cat: string) => {
-				const dataOrEmpty = data.get(cat) || [];
-				return <ThingCategory category={cat} data={dataOrEmpty}/>;
-			});
-		}
-	};
-
-	useEffect(() => {
-		getThings().then((things: ThingItem[]) => {
-			parseData(things);
-		});
-	}, []);
-
-	return <div className="main">
-		<AdminLogin/>
-		<CreateCategory></CreateCategory>
-		<div className="category-list">
-			{loopCats()}
-		</div>
-	</div>;
+	if (isAuthenticated) {
+		return <div className="main">
+			<Route exact path="/admin" component={CategoryList}/>
+			<Route path="/admin/create" component={CreateCategory}/>
+			<Route path="/admin/category/:categoryName" component={LevelLists}/>
+		</div>;
+	} else {
+		return <button onClick={signInToDB}>Sign In</button>;
+	}
 };
