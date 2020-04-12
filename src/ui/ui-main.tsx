@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { getThings } from '../thing-db';
 import { ThingItem } from '../data-model';
+import { thingDB } from '../db/thing-db';
 
 export const UiMain = () => {
-	const things: ThingItem[] = getThings();
+	const things: ThingItem[] = thingDB.getAll();
 	const [card, setCard] = useState();
 
 	const randomCard = () => {

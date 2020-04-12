@@ -2,14 +2,14 @@ import * as React from 'react';
 import { useState } from 'react';
 import './admin-main.css';
 import { CreateCategory } from './create-category';
-import {
-	getAuth,
-	signInToDB
-} from '../firebase-util';
 import { User } from 'firebase';
 import { Route } from 'react-router-dom';
 import { CategoryList } from './category-list';
 import { LevelLists } from './level-lists';
+import {
+	getAuth,
+	signIn
+} from '../db/firebase-util';
 
 export const AdminMain = () => {
 	const [isAuthenticated, setAuthenticated] = useState(false);
@@ -25,6 +25,6 @@ export const AdminMain = () => {
 			<Route path="/admin/category/:categoryName" component={LevelLists}/>
 		</div>;
 	} else {
-		return <button onClick={signInToDB}>Sign In</button>;
+		return <button onClick={signIn}>Sign In</button>;
 	}
 };

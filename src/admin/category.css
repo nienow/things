@@ -1,13 +1,20 @@
 .category {
 	/*width: 300px;*/
-	border: 1px solid #aaa;
-	padding: 10px;
+	border: 1px solid #ddd;
 	display: flex;
+	align-items: center;
+	margin-top: 10px;
 }
 
 .category__name {
-	padding: 10px;
+	padding: 20px;
+	border-width: 0;
+	background: none;
 	cursor: pointer;
+	font-weight: 500;
+	font-size: 16px;
+	border-right: 1px solid #ddd;
+	width: 200px;
 }
 
 .category__total {

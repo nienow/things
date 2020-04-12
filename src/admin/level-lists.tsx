@@ -1,8 +1,5 @@
 import * as React from 'react';
-import {
-	FormEvent,
-	useState
-} from 'react';
+import { useState } from 'react';
 import {
 	DragDropContext,
 	Draggable,
@@ -11,18 +8,13 @@ import {
 import './level-lists.css';
 import {
 	Button,
-	IconButton,
-	TextField
+	IconButton
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import { getDB, } from '../firebase-util';
 import { ThingItem } from '../data-model';
-import {
-	addThing,
-	deleteThing,
-	getThingMap
-} from '../thing-db';
 import { useParams } from 'react-router-dom';
+import { thingDB } from '../db/thing-db';
+import { CreateThing } from './create-thing';
 
 const reorder = (list: any[], startIndex: number, endIndex: number) => {
 	const result = Array.from(list);
@@ -57,15 +49,13 @@ export const LevelLists = () => {
 		[],
 		[]
 	];
-	console.log('cat: ' + categoryName);
-	const data = getThingMap().get(categoryName);
+	const data = thingDB.getByCategory(categoryName);
 	data.forEach((item: any) => {
 		initialLevels[item.level || 0].push(item);
 	});
 
 	const [levels, setLevels] = useState(initialLevels);
 	const [dirty, setDirty] = useState(false);
-	const [value, setValue] = useState('');
 
 	const getList = (id: any) => {
 		return levels[Number(id)];
@@ -109,15 +99,7 @@ export const LevelLists = () => {
 		});
 
 		if (dirtyObjs.length > 0) {
-			const batch = getDB().batch();
-			dirtyObjs.forEach((dirtyObj: ThingItem) => {
-				batch.update(getDB().collection('things').doc(dirtyObj.id), {
-					level: dirtyObj.level,
-					seq: dirtyObj.seq
-				});
-			});
-			batch.commit().then(() => {
-				// success
+			thingDB.update(dirtyObjs).then(() => {
 				setDirty(false);
 			}, () => {
 				alert('failed to update');
@@ -126,34 +108,16 @@ export const LevelLists = () => {
 	};
 
 	const deleteItem = (item: ThingItem, level: number) => {
-		deleteThing(item)
+		thingDB.delete(item)
 		.then(() => {
 			levels[level].splice(levels[level].indexOf(item), 1);
 			setLevels(levels);
-			setValue('');
 		});
 	};
 
-	const handleChange = (event: FormEvent) => {
-		const target: HTMLInputElement = event.target as HTMLInputElement;
-		setValue(target.value);
-	};
-
-	const handleSubmit = (event: FormEvent) => {
-		event.preventDefault();
-		addThing({
-			title: value,
-			category: categoryName
-		})
-		.then((docRef) => {
-			levels[0].push({
-				id: docRef.id,
-				title: value,
-				category: categoryName
-			});
-			setLevels(levels);
-			setValue('');
-		});
+	const handleAdd = (newThing: ThingItem) => {
+		levels[0].push(newThing);
+		setLevels(levels);
 	};
 
 	const levelList = (i: number) => {
@@ -185,10 +149,7 @@ export const LevelLists = () => {
 	return <div>
 		<h3>{categoryName}</h3>
 		{saveButton}
-		<form onSubmit={handleSubmit}>
-			<TextField id="outlined-basic" placeholder={'New ' + categoryName + '...'} variant="outlined"
-					   onChange={handleChange} value={value}/>
-		</form>
+		<CreateThing category={categoryName} onAdd={handleAdd}/>
 		<div className="level-lists">
 			<DragDropContext onDragEnd={onDragEnd}>
 				{levelList(0)}

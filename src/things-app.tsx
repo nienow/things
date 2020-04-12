@@ -9,7 +9,7 @@ import {
 	Route
 } from 'react-router-dom';
 import { UiMain } from './ui/ui-main';
-import { whenThingsLoaded } from './thing-db';
+import { whenThingsLoaded } from './db/thing-db';
 
 const ThingsApp = () => {
 	const [ready, setReady] = useState(false);

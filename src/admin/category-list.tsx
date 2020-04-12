@@ -1,22 +1,17 @@
 import { default as React } from 'react';
-import {
-	getCategories,
-	getThingMap
-} from '../thing-db';
 import { ThingCategory } from './category';
-import Button from '@material-ui/core/Button';
 import { useHistory } from 'react-router-dom';
+import { thingDB } from '../db/thing-db';
+import './category-list.css';
 
 export const CategoryList = () => {
 	const history = useHistory();
-	const categories = getCategories();
-	const data = getThingMap();
+	const categories = thingDB.getCategories();
 
 	const loopCats = () => {
 		if (categories) {
 			return categories.map((cat: string) => {
-				const dataOrEmpty = data.get(cat) || [];
-				return <ThingCategory category={cat} data={dataOrEmpty}/>;
+				return <ThingCategory category={cat}/>;
 			});
 		}
 	};
@@ -25,11 +20,10 @@ export const CategoryList = () => {
 		history.push('/admin/create');
 	};
 
-	return <div className="main">
-		<Button color="primary" onClick={handleClick}>
-			New Category
-		</Button>
-		<div className="category-list">
+	return <div className="category-list">
+		<button onClick={handleClick}>New Category</button>
+		<span className="category-list__total">Total Categories: {categories.length}</span>
+		<div>
 			{loopCats()}
 		</div>
 	</div>;

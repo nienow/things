@@ -3,21 +3,19 @@ import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 
-const fireConfig = require('./fireConfig.json');
+const fireConfig = require('../fireConfig.json');
 
 firebase.initializeApp(fireConfig);
 
-const fireDB = firebase.firestore();
-
-export const getDB = () => {
-	return fireDB;
+export function getStore() {
+	return firebase.firestore();
 };
 
-export const getAuth = () => {
+export function getAuth() {
 	return firebase.auth();
 };
 
-export const signInToDB = () => {
+export function signIn() {
 	var provider = new firebase.auth.GoogleAuthProvider();
 	return firebase.auth().signInWithPopup(provider);
 };

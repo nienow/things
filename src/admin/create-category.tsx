@@ -4,8 +4,8 @@ import {
 	useState
 } from 'react';
 import './create-category.css';
-import { addThing } from '../thing-db';
 import { useHistory } from 'react-router-dom';
+import { thingDB } from '../db/thing-db';
 
 export const CreateCategory = () => {
 	const history = useHistory();
@@ -14,7 +14,7 @@ export const CreateCategory = () => {
 
 	const handleSubmit = (event: FormEvent) => {
 		event.preventDefault();
-		addThing({
+		thingDB.add({
 			title: newTitle,
 			category: newCat
 		}).then(() => {

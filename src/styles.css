@@ -1,4 +1,8 @@
-html,body {
+body {
+	padding: 20px;
+}
+
+html, body, button {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 15px;
 }
