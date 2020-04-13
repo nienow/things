@@ -6,3 +6,8 @@ html, body, button {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 15px;
 }
+
+input {
+	padding: 10px;
+	border: 1px solid #ddd;
+}

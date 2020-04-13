@@ -29,6 +29,7 @@ export function CreateThing(props: ThingNameFieldProps) {
 	};
 
 	return <form onSubmit={handleSubmit}>
-		<input placeholder={'New ' + props.category + '...'} onChange={handleTitleChange} value={title}/>
+		<input className="create-thing__input" placeholder={'New ' + props.category + '...'} onChange={handleTitleChange}
+			   value={title}/>
 	</form>;
 }
