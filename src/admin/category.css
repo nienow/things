@@ -17,6 +17,10 @@
 	width: 200px;
 }
 
+.category__new {
+	padding: 0 10px;
+}
+
 .category__total {
 	padding: 10px;
 }
