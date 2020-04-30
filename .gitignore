@@ -2,3 +2,5 @@
 node_modules
 src/fireConfig.json
 build/
+*.log
+.firebase/
