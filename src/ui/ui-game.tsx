@@ -1,0 +1,28 @@
+import * as React from 'react';
+import { useState } from 'react';
+import { ThingItem } from '../data-model';
+import { thingDB } from '../db/thing-db';
+
+export const UiGame = () => {
+	const things: ThingItem[] = thingDB.getAll();
+	const [card, setCard] = useState();
+
+	const randomCard = () => {
+		const index = Math.floor(Math.random() * things.length);
+		setCard(things[index]);
+	};
+
+	const displayCard = () => {
+		if (card) {
+			return <div>{card.title} ({card.category})</div>;
+		} else {
+			return <div></div>;
+		}
+	};
+
+	return <div>
+		<div>Welcome to word generator!</div>
+		<button onClick={randomCard}>New Card</button>
+		{displayCard()}
+	</div>;
+};

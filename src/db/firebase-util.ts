@@ -7,8 +7,18 @@ const fireConfig = require('../fireConfig.json');
 
 firebase.initializeApp(fireConfig);
 
+const store = firebase.firestore();
+
+if (window.location.hostname === "localhost") {
+	console.log("localhost detected!");
+	store.settings({
+		host: "localhost:8020",
+		ssl: false
+	});
+}
+
 export function getStore() {
-	return firebase.firestore();
+	return store;
 };
 
 export function getAuth() {

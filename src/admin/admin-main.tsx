@@ -1,15 +1,14 @@
 import * as React from 'react';
 import { useState } from 'react';
 import './admin-main.css';
-import { CreateCategory } from './create-category';
 import { User } from 'firebase';
 import { Route } from 'react-router-dom';
-import { CategoryList } from './category-list';
-import { LevelLists } from './level-lists';
 import {
 	getAuth,
 	signIn
 } from '../db/firebase-util';
+import { NoCollection } from './no-collection';
+import { AdminCollectionPage } from './admin-collection';
 
 export const AdminMain = () => {
 	const [isAuthenticated, setAuthenticated] = useState(false);
@@ -20,9 +19,8 @@ export const AdminMain = () => {
 
 	if (isAuthenticated) {
 		return <div className="main">
-			<Route exact path="/admin" component={CategoryList}/>
-			<Route path="/admin/create" component={CreateCategory}/>
-			<Route path="/admin/category/:categoryName" component={LevelLists}/>
+			<Route exact path="/admin" component={NoCollection}/>
+			<Route path="/admin/:collection" component={AdminCollectionPage}/>
 		</div>;
 	} else {
 		return <button onClick={signIn}>Sign In</button>;

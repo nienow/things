@@ -1,10 +1,14 @@
 import { default as React } from 'react';
 import { ThingCategory } from './category';
-import { useHistory } from 'react-router-dom';
+import {
+	useHistory,
+	useParams
+} from 'react-router-dom';
 import { thingDB } from '../db/thing-db';
 import './category-list.css';
 
 export const CategoryList = () => {
+	const {collection} = useParams();
 	const history = useHistory();
 	const categories = thingDB.getCategories();
 
@@ -17,7 +21,7 @@ export const CategoryList = () => {
 	};
 
 	const handleClick = () => {
-		history.push('/admin/create');
+		history.push('/admin/' + collection + '/create');
 	};
 
 	return <div className="category-list">

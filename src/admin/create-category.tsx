@@ -4,21 +4,25 @@ import {
 	useState
 } from 'react';
 import './create-category.css';
-import { useHistory } from 'react-router-dom';
+import {
+	useHistory,
+	useParams
+} from 'react-router-dom';
 import { thingDB } from '../db/thing-db';
 
 export const CreateCategory = () => {
+	const {collection} = useParams();
 	const history = useHistory();
 	const [newCat, setNewCat] = useState('');
-	const [newTitle, setNewTitle] = useState('');
+	const [items, setItems] = useState('');
 
 	const handleSubmit = (event: FormEvent) => {
 		event.preventDefault();
-		thingDB.add({
-			title: newTitle,
+		thingDB.addMultiple(items.split('\n').map(item => ({
+			title: item,
 			category: newCat
-		}).then(() => {
-			history.push('/admin');
+		}))).then(() => {
+			history.push('/admin/' + collection);
 		});
 	};
 
@@ -27,9 +31,9 @@ export const CreateCategory = () => {
 		setNewCat(target.value);
 	};
 
-	const handleTitleChange = (event: FormEvent) => {
+	const handleItemChange = (event: FormEvent) => {
 		const target: HTMLInputElement = event.target as HTMLInputElement;
-		setNewTitle(target.value);
+		setItems(target.value);
 	};
 
 	return (<div className="create-category">
@@ -40,12 +44,12 @@ export const CreateCategory = () => {
 				onChange={handleCatChange}
 				placeholder={'New Category...'}
 			/>
-			<input
-				type="text"
-				value={newTitle}
-				onChange={handleTitleChange}
-				placeholder={'New Title...'}
-			/>
+			<textarea
+				value={items}
+				onChange={handleItemChange}
+				placeholder={'Items...'}
+				rows={50}
+			></textarea>
 			<button type="submit">Submit</button>
 		</form>
 	</div>);

@@ -1,3 +1,4 @@
-.create-category__popover form {
-	padding: 10px;
+.create-category form {
+	display: flex;
+	align-items: start;
 }

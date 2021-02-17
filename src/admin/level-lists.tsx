@@ -76,8 +76,8 @@ export function LevelLists() {
 		});
 	}
 
-	function handleAdd(newThing: ThingItem) {
-		levels[0].push(newThing);
+	function handleAdd(newThings: ThingItem[]) {
+		newThings.forEach((thing) => levels[0].push(thing));
 		setLevels([...levels]);
 	}
 

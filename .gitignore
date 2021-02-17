@@ -4,3 +4,4 @@ src/fireConfig.json
 build/
 *.log
 .firebase/
+export/

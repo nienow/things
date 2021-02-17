@@ -8,7 +8,7 @@ import { ThingItem } from '../data-model';
 
 interface ThingNameFieldProps {
 	category: string;
-	onAdd: (newThing: ThingItem) => void;
+	onAdd: (newThing: ThingItem[]) => void;
 }
 
 export function CreateThing(props: ThingNameFieldProps) {
@@ -21,15 +21,20 @@ export function CreateThing(props: ThingNameFieldProps) {
 
 	function handleSubmit(event: FormEvent) {
 		event.preventDefault();
-		thingDB.add({
-			title,
+		const newThings = title.split('\n').map(item => ({
+			title: item,
 			category: props.category
-		})
-		.then((newThing: ThingItem) => props.onAdd(newThing));
+		}));
+		thingDB.addMultiple(newThings)
+		.then(() => props.onAdd(newThings));
+		setTitle('');
 	};
 
 	return <form onSubmit={handleSubmit}>
 		<input className="create-thing__input" placeholder={'New ' + props.category + '...'} onChange={handleTitleChange}
 			   value={title}/>
+		<textarea className="create-thing__input" placeholder={'Multiple ' + props.category + '...'} onChange={handleTitleChange}
+				  value={title}></textarea>
+		<button onClick={handleSubmit}>Submit</button>
 	</form>;
 }

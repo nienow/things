@@ -5,10 +5,14 @@ class ThingService {
 	private things: ThingItem[] = [];
 	private categories: Set<string> = new Set();
 
-	constructor(initialList: ThingItem[]) {
+	constructor(private collection: string, initialList: ThingItem[]) {
 		initialList.forEach((item) => {
 			this.addNewThingToList(item);
 		});
+	}
+
+	public getCollection(): string {
+		return this.collection;
 	}
 
 	public getAll(): ThingItem[] {
@@ -31,7 +35,7 @@ class ThingService {
 			throw Error('Failed to add: Duplicate title');
 		}
 		return getStore()
-		.collection('things')
+		.collection(this.collection)
 		.add(thingToAdd)
 		.then((docRef) => {
 			const newThing = {id: docRef.id, ...thingToAdd};
@@ -40,9 +44,18 @@ class ThingService {
 		});
 	}
 
+	public addMultiple(things: ThingItem[]): Promise<void> {
+		const batch = getStore().batch();
+		things.forEach((thing: ThingItem) => {
+			const doc = getStore().collection(this.collection).doc();
+			batch.set(doc, thing);
+		});
+		return batch.commit();
+	}
+
 	public delete(thingToRemove: ThingItem) {
 		return getStore()
-		.collection('things')
+		.collection(this.collection)
 		.doc(thingToRemove.id).delete()
 		.then(() => this.removeThingFromList(thingToRemove));
 	}
@@ -50,7 +63,7 @@ class ThingService {
 	public update(things: ThingItem[]): Promise<void> {
 		const batch = getStore().batch();
 		things.forEach((thing: ThingItem) => {
-			batch.update(getStore().collection('things').doc(thing.id), {
+			batch.update(getStore().collection(this.collection).doc(thing.id), {
 				level: thing.level,
 				seq: thing.seq
 			});
@@ -75,19 +88,22 @@ class ThingService {
 }
 
 export let thingDB: ThingService;
-const thingPromise = getStore()
-.collection('things')
-.get()
-.then((querySnapshot) => {
-	const thingList: ThingItem[] = [];
-	querySnapshot.forEach((doc) => {
-		thingList.push({
-			id: doc.id, ...doc.data()
-		} as ThingItem);
-	});
-	thingDB = new ThingService(thingList);
-});
 
-export function whenThingsLoaded(): Promise<void> {
-	return thingPromise;
-};
+export function loadCollection(name: string): Promise<ThingService> {
+	if (thingDB && thingDB.getCollection() === name) {
+		return Promise.resolve(thingDB);
+	}
+	return getStore()
+	.collection(name)
+	.get()
+	.then((querySnapshot) => {
+		const thingList: ThingItem[] = [];
+		querySnapshot.forEach((doc) => {
+			thingList.push({
+				id: doc.id, ...doc.data()
+			} as ThingItem);
+		});
+		thingDB = new ThingService(name, thingList);
+		return thingDB;
+	});
+}

@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
 import './category.css';
-import { useHistory } from 'react-router-dom';
+import {
+	useHistory,
+	useParams
+} from 'react-router-dom';
 import { thingDB } from '../db/thing-db';
 import { CreateThing } from './create-thing';
 import { ThingItem } from '../data-model';
@@ -11,11 +14,12 @@ interface CategoryProps {
 }
 
 export const ThingCategory = (props: CategoryProps) => {
+	const {collection} = useParams();
 	const history = useHistory();
 	const [things, setThings] = useState(thingDB.getByCategory(props.category) || []);
 
 	function goToCategory() {
-		history.push(`/admin/category/${props.category}`);
+		history.push(`/admin/${collection}/category/${props.category}`);
 	}
 
 	function getThingPrintout() {
@@ -24,8 +28,8 @@ export const ThingCategory = (props: CategoryProps) => {
 		}).join(', ');
 	}
 
-	function handleAdd(newThing: ThingItem) {
-		things.push(newThing);
+	function handleAdd(newThings: ThingItem[]) {
+		newThings.forEach(thing => things.push(thing));
 		setThings([...things]);
 	}
 
